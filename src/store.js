@@ -1,13 +1,13 @@
-import { createStore } from 'redux';
+import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; 
 import { combineReducers } from 'redux';
 
 const initialState = {
     tasks: [
-        { title: "Task 1"},
-        { title: "Task 2"},
-        { title: "Task 3"}
+        { title: "Task 1", completed: false },
+        { title: "Task 2", completed: false },
+        { title: "Task 3", completed: false },
     ]
 };
 
@@ -31,15 +31,18 @@ const tasksReducer = (state = initialState, action) => {
 };
 
 const rootReducer = combineReducers({
-    tasksState: tasksReducer
+    tasksState: tasksReducer,
 });
 
 const persistConfig = {
     key: 'root',
-    storage
+    storage,
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-export const store = createStore(persistedReducer);
+export const store = configureStore({
+    reducer: persistedReducer,
+});
+
 export const persistor = persistStore(store);
