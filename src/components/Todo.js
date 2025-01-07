@@ -1,18 +1,24 @@
 import React, { useState } from "react";
-import "./Todo.css";
 import { useSelector, useDispatch } from "react-redux";
+import { addTask, completeTask, editTask } from "../features/todoSlice";
+import "./Todo.css";
 
-function Task({ task, completeTask, editTask }) {
+function Task({ task }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedValue, setEditedValue] = useState(task.title);
+  const dispatch = useDispatch();
 
   const handleEdit = () => {
     setIsEditing(true);
   };
 
   const handleSave = () => {
-    editTask(task.id, editedValue);
+    dispatch(editTask({ id: task.id, newTitle: editedValue }));
     setIsEditing(false);
+  };
+
+  const handleComplete = () => {
+    dispatch(completeTask(task.id));
   };
 
   return (
@@ -40,10 +46,7 @@ function Task({ task, completeTask, editTask }) {
             <button onClick={handleEdit} className="edit-btn">
               Edit
             </button>
-            <button
-              onClick={() => completeTask(task.id)}
-              className="complete-btn"
-            >
+            <button onClick={handleComplete} className="complete-btn">
               Complete
             </button>
           </>
@@ -53,14 +56,14 @@ function Task({ task, completeTask, editTask }) {
   );
 }
 
-function CreateTask({ addTask }) {
+function CreateTask() {
   const [value, setValue] = useState("");
+  const dispatch = useDispatch();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!value) return;
-
-    addTask(value);
+    if (value.trim() === "") return;
+    dispatch(addTask(value));
     setValue("");
   };
 
@@ -81,35 +84,17 @@ function CreateTask({ addTask }) {
 }
 
 function Todo() {
-  const dispatch = useDispatch();
   const tasks = useSelector((state) => state.tasksState.tasks);
-
-  const addTask = (title) => {
-    dispatch({ type: "ADD_TASK", payload: title });
-  };
-
-  const completeTask = (id) => {
-    dispatch({ type: "COMPLETE_TASK", payload: id });
-  };
-
-  const editTask = (id, newTitle) => {
-    dispatch({ type: "EDIT_TASK", payload: { id, newTitle } });
-  };
 
   return (
     <div className="todo-container">
       <div className="header">ToDo - List</div>
       <div className="tasks">
         {tasks.map((task) => (
-          <Task
-            task={task}
-            key={task.id}
-            completeTask={completeTask}
-            editTask={editTask}
-          />
+          <Task key={task.id} task={task} />
         ))}
       </div>
-      <CreateTask addTask={addTask} />
+      <CreateTask />
     </div>
   );
 }
