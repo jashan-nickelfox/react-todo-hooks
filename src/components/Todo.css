@@ -1,41 +1,112 @@
-  
 .todo-container {
-      width: 40vw;
-      margin: 10em auto;
-      border-radius: 15px;
-      padding: 20px 10px;
-      color: black;
-      border: 1px solid black;
-    }
-    
+  width: 40vw;
+  margin: 5em auto;
+  border-radius: 15px;
+  padding: 20px 10px;
+  color: black;
+  border: 1px solid black;
+  background-color: #f9f9f9;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 .task {
-      border: 1px solid black;
-      border-radius: 5px;
-      padding: 0.5em;
-      margin: 0.5em;
-    }
-    
-.task button{
-      background: orange;
-      border-radius: 5px;
-      margin: 0px 5px;
-      padding: 3px 5px;
-      border: none;
-      cursor: pointer;
-      color: black;
-      float: right;
-    }
-    
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 0.7em;
+  margin: 0.7em;
+  background-color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.task .buttons {
+  display: flex;
+  gap: 0.5em;
+}
+
+.task button {
+  background: orange;
+  border-radius: 5px;
+  margin: 0;
+  padding: 5px 8px;
+  border: none;
+  cursor: pointer;
+  color: black;
+  font-size: 0.9em;
+  transition: all 0.2s ease-in-out;
+}
+
+.task button:hover {
+  background: #ff8c00;
+  transform: scale(1.05);
+}
+
 .header {
-      margin: 0.5em;
-      font-size: 2em;
-      text-align: center;
-    }
-    
-.create-task input[type=text] {
-      margin: 5.5em 2.5em;
-      width: 80%;
-      outline: none;
-      border: none;
-      padding: 0.7em;
-    }
+  margin: 0.5em 0;
+  font-size: 2em;
+  text-align: center;
+  font-weight: bold;
+  color: #333;
+}
+
+.create-task-form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1em;
+}
+
+.create-task-form input[type="text"] {
+  width: 70%;
+  padding: 0.7em;
+  outline: none;
+  border: 1px solid black;
+  border-radius: 5px;
+  font-size: 1em;
+  box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.create-task-form button {
+  background: orange;
+  border: none;
+  padding: 0.7em 1em;
+  margin-left: 1em;
+  border-radius: 5px;
+  cursor: pointer;
+  color: black;
+  font-weight: bold;
+  transition: all 0.2s ease-in-out;
+}
+
+.create-task-form button:hover {
+  background: #ff8c00;
+  transform: scale(1.1);
+}
+
+.edit-input {
+  width: 70%;
+  padding: 0.5em;
+  outline: none;
+  border: 1px solid black;
+  border-radius: 5px;
+  font-size: 1em;
+  display: flex;
+}
+
+.save-btn {
+  background: green;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: all 0.2s ease-in-out;
+}
+
+.save-btn:hover {
+  background: #00b300;
+  transform: scale(1.05);
+}
