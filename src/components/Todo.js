@@ -1,74 +1,102 @@
-import React from 'react';
-import './Todo.css';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { addTask, completeTask, editTask } from "../features/todoSlice";
+import "./Todo.css";
 
-function Task({ task, index, completeTask }) {
-    return (
-        <div
-            className="task"
-            style={{ textDecoration: task.completed ? "line-through" : "" }}
-        >
-            {task.title}
-            <button onClick={() => completeTask(index)} className="complete-btn">
-                Complete
+function Task({ task }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedValue, setEditedValue] = useState(task.title);
+  const dispatch = useDispatch();
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    dispatch(editTask({ id: task.id, newTitle: editedValue }));
+    setIsEditing(false);
+  };
+
+  const handleComplete = () => {
+    dispatch(completeTask(task.id));
+  };
+
+  return (
+    <div
+      className="task"
+      style={{ textDecoration: task.completed ? "line-through" : "" }}
+    >
+      {isEditing ? (
+        <input
+          className="edit-input"
+          type="text"
+          value={editedValue}
+          onChange={(e) => setEditedValue(e.target.value)}
+        />
+      ) : (
+        <span>{task.title}</span>
+      )}
+      <div className="buttons">
+        {isEditing ? (
+          <button onClick={handleSave} className="save-btn">
+            Save
+          </button>
+        ) : (
+          <>
+            <button onClick={handleEdit} className="edit-btn">
+              Edit
             </button>
-        </div>
-    );
+            <button onClick={handleComplete} className="complete-btn">
+              Complete
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
-function CreateTask({ addTask }) {
-    const [value, setValue] = React.useState("");
+function CreateTask() {
+  const [value, setValue] = useState("");
+  const dispatch = useDispatch();
 
-    const handleSubmit = e => {
-        e.preventDefault();
-        if (!value) return;
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (value.trim() === "") return;
+    dispatch(addTask(value));
+    setValue("");
+  };
 
-        addTask(value);
-        setValue("");
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="create-task-form">
-            <input
-                type="text"
-                className="input"
-                value={value}
-                placeholder="Add a new task"
-                onChange={e => setValue(e.target.value)}
-            />
-            <button type="submit" className="add-btn">Add Task</button>
-        </form>
-    );
+  return (
+    <form onSubmit={handleSubmit} className="create-task-form">
+      <input
+        type="text"
+        className="input"
+        value={value}
+        placeholder="Add a new task"
+        onChange={(e) => setValue(e.target.value)}
+      />
+      <button type="submit" className="add-btn">
+        Add Task
+      </button>
+    </form>
+  );
 }
 
 function Todo() {
-    const dispatch = useDispatch();
-    const tasks = useSelector(state => state.tasksState.tasks);
+  const tasks = useSelector((state) => state.tasksState.tasks);
 
-    const addTask = title => {
-        dispatch({ type: 'ADD_TASK', payload: title });
-    };
-
-    const completeTask = index => {
-        dispatch({ type: 'COMPLETE_TASK', payload: index });
-    };
-
-    return (
-        <div className="todo-container">
-            <div className="header">ToDo - List</div>
-            <div className="tasks">
-                {tasks.map((task, index) => (
-                    <Task
-                        task={task}
-                        index={index}
-                        key={index}
-                        completeTask={completeTask}
-                    />
-                ))}
-            </div>
-            <CreateTask addTask={addTask} />
-        </div>
-    );
+  return (
+    <div className="todo-container">
+      <div className="header">ToDo - List</div>
+      <div className="tasks">
+        {tasks.map((task) => (
+          <Task key={task.id} task={task} />
+        ))}
+      </div>
+      <CreateTask />
+    </div>
+  );
 }
 
 export default Todo;
