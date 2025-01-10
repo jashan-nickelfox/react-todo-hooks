@@ -8,8 +8,7 @@ function Chatbot() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const apiKey =
-    "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";
+  const apiKey = process.env.REACT_API;
   const sendMessage = async () => {
     if (!input.trim()) return;
 
