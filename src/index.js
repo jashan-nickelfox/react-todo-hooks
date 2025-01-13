@@ -5,6 +5,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import { store, persistor } from "./store";
 import "./index.css";
 import Todo from "./components/Todo";
+import Chatbot from "./components/Chatbot";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -13,5 +14,6 @@ root.render(
     <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
       <Todo />
     </PersistGate>
+    <Chatbot />
   </Provider>
 );
