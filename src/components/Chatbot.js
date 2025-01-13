@@ -1,113 +1,118 @@
-import React, { useState } from "react";
-import axios from "axios";
+import { useState, useRef, useEffect } from "react";
 import "./Chatbot.css";
+import axios from "axios";
+import ReactMarkdown from "react-markdown";
 
-function Chatbot() {
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+function App() {
+  const [chatHistory, setChatHistory] = useState([]);
+  const [question, setQuestion] = useState("");
+  const [generatingAnswer, setGeneratingAnswer] = useState(false);
 
-  const apiKey = process.env.REACT_API;
-  const sendMessage = async () => {
-    if (!input.trim()) return;
+  const chatContainerRef = useRef(null);
 
-    const userMessage = { role: "user", content: input };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setIsLoading(true);
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  }, [chatHistory, generatingAnswer]);
+
+  async function generateAnswer(e) {
+    e.preventDefault();
+    if (!question.trim()) return;
+
+    setGeneratingAnswer(true);
+    const currentQuestion = question;
+    setQuestion("");
+    setChatHistory((prev) => [
+      ...prev,
+      { type: "question", content: currentQuestion },
+    ]);
 
     try {
-      const response = await axios.post(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          model: "gpt-3.5-turbo",
-          messages: [
-            { role: "system", content: "You are a helpful assistant." },
-            ...messages,
-            userMessage,
-          ],
+      const response = await axios({
+        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.REACT_APP_API_GENERATIVE_LANGUAGE_CLIENT}`,
+        method: "post",
+        data: {
+          contents: [{ parts: [{ text: question }] }],
         },
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      });
 
-      if (response.data?.choices?.length > 0) {
-        const botMessage = {
-          role: "assistant",
-          content: response.data.choices[0].message.content,
-        };
-
-        setMessages((prev) => [...prev, botMessage]);
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: "Error" },
-        ]);
-      }
-    } catch (error) {
-      console.error("Error communicating with OpenAI:", error);
-
-      if (error.response) {
-        console.log("Error Response:", error.response);
-        setError(
-          error.response.data?.error?.message || "An unknown error occurred."
-        );
-      } else if (error.request) {
-        console.log("Error Request:", error.request);
-        setError("The request was made but no response was received.");
-      } else {
-        setError("Error setting up request: " + error.message);
-      }
-
-      setMessages((prev) => [
+      const aiResponse =
+        response.data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "Sorry, I couldn't generate a response.";
+      setChatHistory((prev) => [
         ...prev,
-        { role: "assistant", content: "Hi, I'm there to help you" },
+        { type: "answer", content: aiResponse },
       ]);
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error(error);
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          type: "answer",
+          content: "Sorry - Something went wrong. Please try again!",
+        },
+      ]);
     }
-  };
+    setGeneratingAnswer(false);
+  }
 
   return (
     <div className="chatbot-container">
-      <div className="chatbot-header">Chatbot</div>
-      <div className="chatbot-messages">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`message ${msg.role === "user" ? "user" : "bot"}`}
+      <div className="chatbox">
+        <header className="chatbox-header">
+          <h2>Chatbot</h2>
+        </header>
+
+        <div className="chatbox-messages" ref={chatContainerRef}>
+          {chatHistory.map((chat, index) => (
+            <div
+              key={index}
+              className={`chat-message ${
+                chat.type === "question"
+                  ? "chat-message-user"
+                  : "chat-message-bot"
+              }`}
+            >
+              <div className="message-bubble">
+                <ReactMarkdown>{chat.content}</ReactMarkdown>
+              </div>
+            </div>
+          ))}
+          {generatingAnswer && (
+            <div className="chat-message chat-message-bot">
+              <div className="message-bubble">Thinking...</div>
+            </div>
+          )}
+        </div>
+
+        <form className="chatbox-input" onSubmit={generateAnswer}>
+          <textarea
+            required
+            className="input-box"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="Type your message..."
+            rows="1"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                generateAnswer(e);
+              }
+            }}
+          ></textarea>
+          <button
+            type="submit"
+            className="send-button"
+            disabled={generatingAnswer}
           >
-            {msg.content}
-          </div>
-        ))}
-        {isLoading && <div className="message bot">Typing...</div>}
-      </div>
-      <div className="chatbot-input-container">
-        <input
-          type="text"
-          className="chatbot-input"
-          placeholder="Ask me anything..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-        />
-        <button
-          className="chatbot-send-btn"
-          onClick={sendMessage}
-          disabled={isLoading}
-        >
-          Send
-        </button>
+            Send
+          </button>
+        </form>
       </div>
     </div>
   );
 }
 
-export default Chatbot;
-
-//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
+export default App;
