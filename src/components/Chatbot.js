@@ -2,11 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import "./Chatbot.css";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
+import icon from "../images/icon.svg";
 
 function App() {
   const [chatHistory, setChatHistory] = useState([]);
   const [question, setQuestion] = useState("");
   const [generatingAnswer, setGeneratingAnswer] = useState(false);
+  const [isChatbotVisible, setIsChatbotVisible] = useState(false);
 
   const chatContainerRef = useRef(null);
 
@@ -59,59 +61,70 @@ function App() {
   }
 
   return (
-    <div className="chatbot-container">
-      <div className="chatbox">
-        <header className="chatbox-header">
-          <h2>Chatbot</h2>
-        </header>
+    <>
+      <button
+        className="toggle-chatbot-button"
+        onClick={() => setIsChatbotVisible(!isChatbotVisible)}
+      >
+        <img src={icon} alt="Chatbot Toggle" className="toggle-icon" />
+      </button>
 
-        <div className="chatbox-messages" ref={chatContainerRef}>
-          {chatHistory.map((chat, index) => (
-            <div
-              key={index}
-              className={`chat-message ${
-                chat.type === "question"
-                  ? "chat-message-user"
-                  : "chat-message-bot"
-              }`}
-            >
-              <div className="message-bubble">
-                <ReactMarkdown>{chat.content}</ReactMarkdown>
-              </div>
+      {isChatbotVisible && (
+        <div className="chatbot-container">
+          <div className="chatbox">
+            <header className="chatbox-header">
+              <h2>Chatbot</h2>
+            </header>
+
+            <div className="chatbox-messages" ref={chatContainerRef}>
+              {chatHistory.map((chat, index) => (
+                <div
+                  key={index}
+                  className={`chat-message ${
+                    chat.type === "question"
+                      ? "chat-message-user"
+                      : "chat-message-bot"
+                  }`}
+                >
+                  <div className="message-bubble">
+                    <ReactMarkdown>{chat.content}</ReactMarkdown>
+                  </div>
+                </div>
+              ))}
+              {generatingAnswer && (
+                <div className="chat-message chat-message-bot">
+                  <div className="loader"></div>
+                </div>
+              )}
             </div>
-          ))}
-          {generatingAnswer && (
-            <div className="chat-message chat-message-bot">
-              <div className="message-bubble">Thinking...</div>
-            </div>
-          )}
+
+            <form className="chatbox-input" onSubmit={generateAnswer}>
+              <textarea
+                required
+                className="input-box"
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                placeholder="Type your message..."
+                rows="1"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    generateAnswer(e);
+                  }
+                }}
+              ></textarea>
+              <button
+                type="submit"
+                className="send-button"
+                disabled={generatingAnswer}
+              >
+                Send
+              </button>
+            </form>
+          </div>
         </div>
-
-        <form className="chatbox-input" onSubmit={generateAnswer}>
-          <textarea
-            required
-            className="input-box"
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Type your message..."
-            rows="1"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                generateAnswer(e);
-              }
-            }}
-          ></textarea>
-          <button
-            type="submit"
-            className="send-button"
-            disabled={generatingAnswer}
-          >
-            Send
-          </button>
-        </form>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
 
