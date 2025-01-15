@@ -6,6 +6,7 @@ import { store, persistor } from "./store";
 import "./index.css";
 import Todo from "./components/Todo";
 import Chatbot from "./components/Chatbot";
+import Loginform from "./components/Loginform";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -15,5 +16,6 @@ root.render(
       <Todo />
     </PersistGate>
     <Chatbot />
+    <Loginform />
   </Provider>
 );
