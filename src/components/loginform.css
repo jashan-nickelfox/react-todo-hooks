@@ -9,7 +9,7 @@
   }
 
   .login-icon:hover {
-      transform: scale(1.2);
+      transform: scale(1.1);
   }
 
   .overlay {
@@ -80,23 +80,21 @@
       cursor: pointer;
   }
 
-  .form-container form button:hover {
-      background: #fab348;
-  }
-
   .action-button {
       width: 100%;
       padding: 12px;
       border: none;
       border-radius: 5px;
       font-size: 1rem;
+      color: white;
+      font-family: "Roboto";
       cursor: pointer;
       font-family: "Roboto";
-      transition: background-color 0.3s, transform 0.2s ease-in-out;
+      transition: transform 0.2s ease-in-out;
   }
 
   .action-button:hover {
-      transform: scale(1.05);
+      transform: scale(1.03);
   }
 
   .auth-toggle {
@@ -118,4 +116,45 @@
   .auth-toggle-link:hover {
       color: #0056b3;
       text-decoration: underline;
+  }
+
+  .google-button {
+      margin-top: 10px;
+      padding: 10px;
+      background: rgb(255, 106, 106);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      font-family: "Roboto";
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.3s, transform 0.2s ease-in-out;
+  }
+
+  .google-button:hover {
+      transform: scale(1.03);
+  }
+
+  .forgot-password-button {
+      margin-top: 10px;
+      padding: 10px;
+      background: transparent;
+      color: #4285f4;
+      border: none;
+      font-size: 14px;
+      text-decoration: underline;
+      cursor: pointer;
+  }
+
+  .forgot-password-button:hover {
+      color: #357ae8;
+      transform: scale(1.02);
+  }
+
+  .oroption {
+      display: flex;
+      justify-content: center;
+      color: #555;
+      font-size: 12px;
   }

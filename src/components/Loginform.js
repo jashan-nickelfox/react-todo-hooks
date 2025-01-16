@@ -9,6 +9,9 @@ import {
   setDoc,
   doc,
   getDoc,
+  GoogleAuthProvider,
+  signInWithPopup,
+  sendPasswordResetEmail,
 } from "../firebase";
 
 function App() {
@@ -32,7 +35,7 @@ function App() {
       );
       const user = userCredential.user;
 
-      await setDoc(doc(db, "users", user.uid), { email, password });
+      await setDoc(doc(db, "users", user.uid), { email });
 
       alert("User signed up successfully!");
       setIsOpen(false);
@@ -60,6 +63,55 @@ function App() {
       }
     } catch (error) {
       alert("Error logging in: " + error.message);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      await setDoc(doc(db, "users", user.uid), {
+        email: user.email,
+        name: user.displayName,
+      });
+
+      alert("Signed up with Google successfully!");
+      setIsOpen(false);
+    } catch (error) {
+      alert("Error signing up with Google: " + error.message);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        alert("Logged in with Google successfully!");
+        setIsOpen(false);
+      } else {
+        alert("User doesn't exist. Please sign up first.");
+      }
+    } catch (error) {
+      alert("Error logging in with Google: " + error.message);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      alert("Please enter your email to reset the password.");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("Password reset email sent. Please check your inbox.");
+    } catch (error) {
+      alert("Error sending password reset email: " + error.message);
     }
   };
 
@@ -97,6 +149,38 @@ function App() {
                 {isSignup ? "Sign Up" : "Log In"}
               </button>
             </form>
+            {isSignup && (
+              <div className="additional-options">
+                <button
+                  type="button"
+                  className="google-button"
+                  onClick={handleGoogleSignUp}
+                >
+                  Sign up with Google
+                </button>
+              </div>
+            )}
+            {!isSignup && (
+              <button
+                type="button"
+                className="forgot-password-button"
+                onClick={handleForgotPassword}
+              >
+                Forgot Password?
+              </button>
+            )}
+            {!isSignup && (
+              <div className="login-options">
+                <p className="oroption">--OR Continue With--</p>
+                <button
+                  type="button"
+                  className="google-button"
+                  onClick={handleGoogleLogin}
+                >
+                  Login with Google
+                </button>
+              </div>
+            )}
             <p className="auth-toggle">
               {isSignup
                 ? "Already have an account? "
