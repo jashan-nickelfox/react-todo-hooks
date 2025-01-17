@@ -110,3 +110,101 @@
   background: #00b300;
   transform: scale(1.05);
 }
+
+@media (max-width: 768px) {
+  .todo-container {
+    width: 70vw;
+    margin: 3em auto;
+  }
+
+  .header {
+    font-size: 1.5em;
+  }
+
+  .create-task-form input[type="text"] {
+    width: 60%;
+    font-size: 0.9em;
+  }
+
+  .create-task-form button {
+    font-size: 0.9em;
+    padding: 0.5em 0.8em;
+  }
+
+  .task {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .task .buttons {
+    margin-top: 0.5em;
+  }
+
+  .task button {
+    font-size: 0.8em;
+    padding: 4px 6px;
+  }
+
+  .edit-input {
+    width: 90%;
+    font-size: 0.9em;
+  }
+
+  .save-btn {
+    font-size: 0.8em;
+    padding: 4px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .todo-container {
+    width: 90%;
+    padding: 15px;
+  }
+
+  .header {
+    font-size: 1.2em;
+  }
+
+  .create-task-form {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .create-task-form input[type="text"] {
+    width: 90%;
+    font-size: 0.9em;
+  }
+
+  .create-task-form button {
+    width: 100%;
+    font-size: 0.9em;
+  }
+
+  .task {
+    padding: 0.5em;
+  }
+
+  .task .buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .add-btn {
+    width: 90%;
+  }
+
+  .task button {
+    font-size: 0.8em;
+    padding: 4px 5px;
+  }
+
+  .edit-input {
+    width: 100%;
+  }
+
+  .save-btn {
+    font-size: 0.8em;
+    padding: 4px 6px;
+  }
+}
