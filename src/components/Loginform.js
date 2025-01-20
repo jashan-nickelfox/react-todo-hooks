@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import loginicon from "../images/login.svg";
 import "./loginform.css";
 import {
@@ -19,6 +20,7 @@ function App() {
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const toggleForm = () => {
     setIsOpen(!isOpen);
@@ -58,6 +60,9 @@ function App() {
       if (userDoc.exists()) {
         alert("Logged in successfully!");
         setIsOpen(false);
+        navigate("/Profile", {
+          state: { user: { ...userDoc.data(), uid: user.uid } },
+        });
       } else {
         alert("User not found!");
       }
@@ -94,6 +99,9 @@ function App() {
       if (userDoc.exists()) {
         alert("Logged in with Google successfully!");
         setIsOpen(false);
+        navigate("/Profile", {
+          state: { user: { ...userDoc.data(), uid: user.uid } },
+        });
       } else {
         alert("User doesn't exist. Please sign up first.");
       }
