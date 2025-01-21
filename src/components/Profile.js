@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Profile.css";
 
 const Profile = () => {
+  const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const user = location.state?.user;
@@ -15,19 +16,34 @@ const Profile = () => {
     );
   }
 
+  const handleClosePopup = () => {
+    setIsOpen(false);
+    navigate("/");
+  };
+
   const handleLogout = () => {
+    setIsOpen(false);
     navigate("/");
   };
 
   return (
-    <div className="profile-container">
-      <h1>Welcome, {user.name || "User"}!</h1>
-      <p>Email: {user.email}</p>
-      <p>User ID: {user.uid}</p>
-      <button className="logout-button" onClick={handleLogout}>
-        Log Out
-      </button>
-    </div>
+    <>
+      {isOpen && (
+        <div className="profile-overlay">
+          <div className="profile-popup">
+            <button className="close-button" onClick={handleClosePopup}>
+              &times;
+            </button>
+            <h1>Welcome, {user.name || "User"}!</h1>
+            <p>Email: {user.email}</p>
+            <p>User ID: {user.uid}</p>
+            <button className="logout-button" onClick={handleLogout}>
+              Log Out
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
