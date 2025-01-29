@@ -8,9 +8,11 @@ import bagimg from "../images/bagicon.svg";
 
 const Profile = ({ userData, icons }) => {
   const [isOpen, setIsOpen] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedUser, setEditedUser] = useState(userData);
   const location = useLocation();
   const navigate = useNavigate();
-  const user = userData || location.state?.user;
+  const user = editedUser || location.state?.user;
 
   if (!user) {
     return (
@@ -30,6 +32,19 @@ const Profile = ({ userData, icons }) => {
     navigate("/");
   };
 
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditedUser({ ...editedUser, [name]: value });
+  };
+
+  const handleSaveChanges = () => {
+    setIsEditing(false);
+  };
+
   return (
     <>
       {isOpen && (
@@ -44,13 +59,43 @@ const Profile = ({ userData, icons }) => {
                     className="profile-avatar"
                   />
                   <div>
-                    <h1 className="profile-name">{user.name || "User Name"}</h1>
-                    <p className="profile-role">
-                      {user.role || "Software Engineer"}
-                    </p>
-                    <p className="profile-location">
-                      {user.location || "Noida, UP"}
-                    </p>
+                    {isEditing ? (
+                      <>
+                        <input
+                          type="text"
+                          name="name"
+                          className="edit-input"
+                          value={user.name || ""}
+                          onChange={handleInputChange}
+                        />
+                        <input
+                          type="text"
+                          name="role"
+                          className="edit-input"
+                          value={user.role || ""}
+                          onChange={handleInputChange}
+                        />
+                        <input
+                          type="text"
+                          name="location"
+                          className="edit-input"
+                          value={user.location || ""}
+                          onChange={handleInputChange}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <h1 className="profile-name">
+                          {user.name || "User Name"}
+                        </h1>
+                        <p className="profile-role">
+                          {user.role || "Software Engineer"}
+                        </p>
+                        <p className="profile-location">
+                          {user.location || "Noida, UP"}
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="info-section1">
@@ -59,13 +104,39 @@ const Profile = ({ userData, icons }) => {
                     <img alt="bagimg" src={bagimg} />
                   </div>
                   <div className="skills2">
-                    <span>{user.currentRole || "Software Engineer"}</span>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="currentRole"
+                        className="edit-input"
+                        value={user.currentRole || ""}
+                        onChange={handleInputChange}
+                      />
+                    ) : (
+                      <span>{user.currentRole || "Software Engineer"}</span>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
             <div className="profile-actions">
-              <button className="edit-profile-button">Edit Profile</button>
+              {isEditing ? (
+                <>
+                  <button className="save-button" onClick={handleSaveChanges}>
+                    Save
+                  </button>
+                  <button className="cancel-button" onClick={handleEditToggle}>
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button
+                  className="edit-profile-button"
+                  onClick={handleEditToggle}
+                >
+                  Edit Profile
+                </button>
+              )}
               <button className="settings-button">Settings</button>
             </div>
             <div className="profile-info">
@@ -75,13 +146,31 @@ const Profile = ({ userData, icons }) => {
                   <img alt="starimg" src={starimg} />
                 </div>
                 <div className="skills">
-                  {user.skills?.length > 0
-                    ? user.skills.map((skill, index) => (
-                        <span key={index}>{skill}</span>
-                      ))
-                    : ["HTML", "CSS", "Dart", "C++", "UI Design"].map(
-                        (skill, index) => <span key={index}>{skill}</span>
-                      )}
+                  {isEditing ? (
+                    <textarea
+                      name="skills"
+                      className="edit-input"
+                      value={user.skills?.join(", ") || ""}
+                      onChange={(e) =>
+                        handleInputChange({
+                          target: {
+                            name: "skills",
+                            value: e.target.value
+                              .split(",")
+                              .map((s) => s.trim()),
+                          },
+                        })
+                      }
+                    />
+                  ) : user.skills?.length > 0 ? (
+                    user.skills.map((skill, index) => (
+                      <span key={index}>{skill}</span>
+                    ))
+                  ) : (
+                    ["HTML", "CSS", "Dart", "C++", "UI Design"].map(
+                      (skill, index) => <span key={index}>{skill}</span>
+                    )
+                  )}
                 </div>
               </div>
               <div className="quick-actions">

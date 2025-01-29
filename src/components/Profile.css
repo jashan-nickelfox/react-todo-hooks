@@ -217,3 +217,46 @@
 .logout-button:hover {
     background-color: #e04e4e;
 }
+
+.edit-input {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.save-button,
+.cancel-button {
+    background-color: #f0a9a9;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+    display: block;
+    align-items: center;
+    height: 2.5rem;
+    z-index: 1000;
+    position: sticky;
+}
+
+.save-button:hover {
+    background-color: rgb(34, 139, 34);
+    color: white;
+}
+
+.cancel-button:hover {
+    background-color: rgb(220, 20, 60);
+    color: white;
+}
+
+.profile-actions.edit-mode {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
