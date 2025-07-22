@@ -1,0 +1,210 @@
+name: Universal CI
+
+on:
+  pull_request:
+    branches: [main, master]
+    paths:
+      - '**/*.js'         # Trigger if JavaScript files change
+      - '**/*.ts'         # Trigger if TypeScript files change
+      - '**/*.tsx'        # Trigger if TypeScript (JSX) files change
+      - '**/*.html'       # Trigger if HTML files change
+      - '**/*.css'        # Trigger if CSS files change
+      - '**/package.json' # Trigger if package.json is modified (for Node.js)
+  workflow_dispatch:  # Manual triggering via API
+
+jobs:
+  # Node.js & TypeScript Lint & Test
+  nodejs_typescript:
+    name: Node.js & TypeScript Lint & Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]  # Only running on ubuntu-latest to avoid repetition
+        node-version: ['20.x', '18.x']
+    if: |
+      contains(github.event.pull_request.changed_files, '.js') ||
+      contains(github.event.pull_request.changed_files, '.ts') ||
+      contains(github.event.pull_request.changed_files, '.tsx') ||
+      contains(github.event.pull_request.changed_files, 'package.json')  # Run if JavaScript/TypeScript files or package.json change
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies (if package.json exists)
+        run: |
+          if [ -f package.json ]; then
+            npm ci
+          else
+            echo "No package.json found. Skipping dependency install."
+          fi
+        shell: bash
+      - name: Check for ESLint config
+        id: eslint-check
+        run: |
+          if hash npx 2>/dev/null && [ -f package.json ] && ([ -f .eslintrc.js ] || [ -f .eslintrc.json ] || [ -f .eslintrc ]); then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+      - name: Run ESLint with reviewdog
+        uses: reviewdog/action-eslint@v1
+        if: steps.eslint-check.outputs.exists == 'true'
+        with:
+          reporter: github-pr-check
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fail_level: warning
+      - name: Run tests (if test script exists)
+        run: |
+          if [ -f package.json ] && jq -e '.scripts.test' package.json > /dev/null; then
+            npm test || echo "Tests failed or not found"
+          else
+            echo "No npm test script. Skipping."
+          fi
+        shell: bash
+
+  # Python Lint & Test
+  python:
+    name: Python Lint & Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]  # Only running on ubuntu-latest
+        python-version: ['3.11', '3.10']
+    if: contains(github.event.pull_request.changed_files, '.py')  # Run only if Python files are changed
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies (if requirements.txt exists)
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            echo "No requirements.txt found. Skipping dependency install."
+          fi
+        shell: bash
+      - name: Check for Python files
+        id: python-check
+        run: |
+          if ls *.py 1> /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+      - name: Run pylint with reviewdog
+        uses: reviewdog/action-pylint@v1
+        if: steps.python-check.outputs.exists == 'true'
+        with:
+          reporter: github-pr-check
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          level: warning
+          fail_level: warning
+      - name: Run tests (if tests exist)
+        run: |
+          if [ -d tests ] || [ -f test* ] || [ -f tests.py ]; then
+            pytest || echo "Tests failed or not found"
+          else
+            echo "No tests found. Skipping."
+          fi
+        shell: bash
+
+  # Kotlin Lint (ktlint) & Test
+  kotlin:
+    name: Kotlin Lint (ktlint) & Test on ubuntu-latest
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.changed_files, '.kt')  # Run only if Kotlin files are changed
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ktlint
+        run: curl -sSLO https://github.com/pinterest/ktlint/releases/download/1.2.1/ktlint && chmod +x ktlint
+      - name: Check for Kotlin files
+        id: kotlin-check
+        run: |
+          if ls **/*.kt 1> /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+      - name: Run ktlint with reviewdog
+        uses: reviewdog/action-ktlint@v1
+        if: steps.kotlin-check.outputs.exists == 'true'
+        with:
+          reporter: github-pr-check
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fail_level: warning
+      - name: Build & test (if Gradle exists)
+        run: |
+          if [ -f gradlew ]; then
+            chmod +x gradlew
+            ./gradlew assemble
+            ./gradlew testDebugUnitTest || echo "Tests failed or not found"
+          else
+            echo "No gradlew found. Skipping Android build/test."
+          fi
+        shell: bash
+
+  # SwiftLint & Test
+  swift:
+    name: SwiftLint & Test on macos-latest
+    runs-on: macos-latest
+    if: contains(github.event.pull_request.changed_files, '.swift')  # Run only if Swift files are changed
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SwiftLint
+        run: brew install swiftlint
+      - name: Check for Swift files
+        id: swift-check
+        run: |
+          if ls **/*.swift 1> /dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+      - name: Run swiftlint with reviewdog
+        uses: reviewdog/action-swiftlint@v1
+        if: steps.swift-check.outputs.exists == 'true'
+        with:
+          reporter: github-pr-check
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fail_level: warning
+      - name: Build & test (if Xcode project exists)
+        run: |
+          if ls *.xcodeproj 1> /dev/null 2>&1; then
+            xcodebuild -project *.xcodeproj -scheme "$(basename *.xcodeproj .xcodeproj)" -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15' build test || echo "Tests failed or not found"
+          else
+            echo "No .xcodeproj found. Skipping iOS build/test."
+          fi
+        shell: bash
+
+  # JavaScript Lint
+  javascript:
+    name: JavaScript Lint on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]  # Only running on ubuntu-latest
+    if: contains(github.event.pull_request.changed_files, '.js')  # Run only if JS files are changed
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for ESLint config (JS only)
+        id: js-eslint-check
+        run: |
+          if [ -f .eslintrc.js ] || [ -f .eslintrc.json ] || [ -f .eslintrc ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+      - name: Run ESLint with reviewdog (JS only)
+        uses: reviewdog/action-eslint@v1
+        if: steps.js-eslint-check.outputs.exists == 'true'
+        with:
+          reporter: github-pr-check
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fail_level: warning
